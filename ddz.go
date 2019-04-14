@@ -18,6 +18,7 @@ type pokerCards struct {
     COLOR string
     SYMBOL string
     VALUE int
+    
 }
 
 //一副牌
@@ -443,12 +444,14 @@ func (show *showHandCardsMore) readLordCardsMore(poker []*pokerCards) [32]pokerC
     return show.lordCards
 }
 
-//是否有大王或小王
+//是否有大王或小王或2
 func isIncludeJoker(cards []*pokerCards) bool {
     for _, c := range cards {
         if c.VALUE == 16 {
             return true
         } else if c.VALUE == 17 {
+            return true
+        } else if c.VALUE == 15 {
             return true
         }
     }
@@ -472,115 +475,90 @@ func checkCardsType(cards []*pokerCards) {
             fmt.Println("不符合规则\n")
         }
     case 3:
-        if isIncludeJoker(cards) {
-            fmt.Println("不符合规则\n")
+        if cards[0].VALUE == cards[1].VALUE && cards[1].VALUE == cards[2].VALUE {
+            fmt.Print("三不带\n")
         } else {
-            if cards[0].VALUE == cards[1].VALUE && cards[1].VALUE == cards[2].VALUE {
-                fmt.Print("三不带\n")
-            } else {
-                fmt.Println("不符合规则\n")
-            }
+            fmt.Println("不符合规则\n")
         }
     case 4:
-        if isIncludeJoker(cards) {
-            fmt.Println("不符合规则\n")
+        //连队
+        if isEvenPair(cards) {
+            fmt.Println("连对\n")
+        //炸弹
+        } else if cards[0].VALUE == cards[1].VALUE && cards[1].VALUE == cards[2].VALUE && cards[2].VALUE == cards[3].VALUE {
+            fmt.Println("炸弹\n")
+        //三带一
+        } else if isThreeOne(cards) {
+            fmt.Println("三带一\n")
         } else {
-            //连队
-            if isEvenPair(cards) {
-                fmt.Println("连对\n")
-            //炸弹
-            } else if cards[0].VALUE == cards[1].VALUE && cards[1].VALUE == cards[2].VALUE && cards[2].VALUE == cards[3].VALUE {
-                fmt.Println("炸弹\n")
-            //三带一
-            } else if isThreeOne(cards) {
-                fmt.Println("三带一\n")
-            } else {
-                fmt.Print("不符合规则\n")
-            }
+            fmt.Print("不符合规则\n")
         }
     case 5:
-        if isIncludeJoker(cards) {
-            fmt.Println("不符合规则\n")
+        // 顺子
+        if isStraight(cards) {
+            fmt.Println("顺子\n")
+        } else if isThreeTwo(cards) {
+            fmt.Println("三带对\n")
         } else {
-            // 顺子
-            if isStraight(cards) {
-                fmt.Println("顺子\n")
-            } else if isThreeTwo(cards) {
-                fmt.Println("三带对\n")
-            } else {
-                fmt.Println("不符合规则\n")
-            }
+            fmt.Println("不符合规则\n")
         }
     case 6:
-        a := cards[0].VALUE == cards[1].VALUE
-        b := cards[1].VALUE == cards[2].VALUE
-        c := cards[3].VALUE == cards[4].VALUE
-        d := cards[4].VALUE == cards[5].VALUE
-        e := cards[0].VALUE != cards[3].VALUE
-        if isIncludeJoker(cards) {
-            fmt.Println("不符合规则\n")
+        if isThreePlane(cards) {
+            fmt.Println("飞机不带\n")
+        } else if isStraight(cards) {
+            fmt.Println("顺子\n")
+        } else if isFourTwo(cards) {
+            fmt.Println("四带二单\n")
         } else {
-            if a == true && a && b && c && d && e {
-                fmt.Println("飞机不带\n")
-            } else if isStraight(cards) {
-                fmt.Println("顺子\n")
-            } else if isFourTwo(cards) {
-                fmt.Println("四带二单\n")
-            } else {
-                fmt.Println("不符合规则\n")
-            }
+            fmt.Println("不符合规则\n")
         }
     case 8:
-        if isIncludeJoker(cards) {
-            fmt.Println("不符合规则\n")
+        if isStraight(cards) {
+            fmt.Println("顺子\n")
+        } else if isPlaneTwo(cards) {
+            fmt.Println("飞机带二单\n")
+        } else if isFourPair(cards) {
+            fmt.Println("四带二对\n")
+        } else if isEvenPair(cards) {
+            fmt.Println("连对\n")
         } else {
-            if isStraight(cards) {
-                fmt.Println("顺子\n")
-            } else if isPlaneTwo(cards) {
-                fmt.Println("飞机带二单\n")
-            } else if isFourPair(cards) {
-                fmt.Println("四带二对\n")
-            } else if isEvenPair(cards) {
-                fmt.Println("连对\n")
-            } else {
-                fmt.Println("不符合规则\n")
-            }
+            fmt.Println("不符合规则\n")
         }
     default:
-        if isIncludeJoker(cards) {
-            fmt.Println("不符合规则\n")
+        if isStraight(cards) {
+            fmt.Println("顺子\n")
+        } else if isEvenPair(cards) {
+            fmt.Println("连对\n")
+        } else if isPlanePair(cards) {
+            fmt.Println("飞机带二对\n")
         } else {
-            if isStraight(cards) {
-                fmt.Println("顺子\n")
-            } else if isEvenPair(cards) {
-                fmt.Println("连对\n")
-            } else if isPlanePair(cards) {
-                fmt.Println("飞机带二对\n")
-            } else {
-                fmt.Println("不符合规则")
-            }
+            fmt.Println("不符合规则")
         }
     }
 }
 
 //是否连对
 func isEvenPair(cards []*pokerCards) bool {
-    bubbleSort(cards)
-    l := len(cards)
-    if l > 3 && l < 25 && (l % 2 == 0) {
-        for i := 0; i < l; {
-            if cards[i].VALUE == cards[i+1].VALUE {
-                i += 2
-            } else {
-                return false
+    if isIncludeJoker(cards) {
+        return false
+    } else {
+        bubbleSort(cards)
+        l := len(cards)
+        if l > 3 && l < 25 && (l % 2 == 0) {
+            for i := 0; i < l; {
+                if cards[i].VALUE == cards[i+1].VALUE {
+                    i += 2
+                } else {
+                    return false
+                }
             }
-        }
         
-        for i := 0; i < l; {
-            if cards[i].VALUE - cards[i+2].VALUE == 1 {
-                i += 4
-            } else {
-                return false
+            for i := 0; i < l; {
+                if cards[i].VALUE - cards[i+2].VALUE == 1 {
+                    i += 4
+                } else {
+                    return false
+                }
             }
         }
     }
@@ -589,12 +567,37 @@ func isEvenPair(cards []*pokerCards) bool {
 
 //是否顺子
 func isStraight(cards []*pokerCards) bool {
-    bubbleSort(cards)
-    for i := 0; i < len(cards)-1; i++ {
-        if (cards[i].VALUE - cards[i+1].VALUE) == 1 {
-            continue
-        } else {
-            return false
+    if isIncludeJoker(cards) {
+        return false
+    } else {
+        bubbleSort(cards)
+        for i := 0; i < len(cards)-1; i++ {
+            if (cards[i].VALUE - cards[i+1].VALUE) == 1 {
+                continue
+            } else {
+                return false
+            }
+        }
+    }
+    return true
+}
+
+//是否飞机不带
+func isThreePlane(cards []*pokerCards) bool {
+    if isIncludeJoker(cards) {
+        return false
+    } else {
+        bubbleSort(cards)
+        for i := 0; i < len(cards); {
+            first := cards[i].VALUE
+            second := cards[i+1].VALUE
+            third := cards[i+2].VALUE
+            fourth := cards[i+3].VALUE
+            if first == second && first == third && first-fourth == 1 {
+                i += 3
+            } else {
+                return false
+            }
         }
     }
     return true
@@ -724,3 +727,5 @@ func isPlanePair(cards []*pokerCards) bool {
     }
     return false
 }
+
+//癞子
