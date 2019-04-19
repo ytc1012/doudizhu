@@ -223,23 +223,6 @@ func afterDealCards(ret playCards) {
     fmt.Println("地主牌：\n", rlc, "\n")
 }
 
-//判断牌型前先排序 降序
-func bubbleSort(cards []*pokerCards) []*pokerCards {
-    length := len(cards)
-    slice := make([]*pokerCards, length) //不能改变原始牌的顺序，根据原始牌中癞子牌的下标进行赋值，每赋值
-    for i := 0; i < length; i++ {        //一次，做一次排序、牌型判断
-        slice[i] = cards[i]
-    }
-    for i := 0; i < length-1; i++ {
-        for j := 0; j < length - i -1; j++ {
-            if slice[j].VALUE < slice[j+1].VALUE {
-                slice[j], slice[j+1] = slice[j+1], slice[j]
-            }
-        }
-    }
-    return slice
-}
-
 //通过地址读取值(一副)
 func (show *showHandCards) readPlayerCards(poker []*pokerCards) [17]pokerCards {
     for i, c := range poker {
@@ -343,7 +326,7 @@ func afterDealCardsMore(ret mPlayCards) {
     rpc4 := show.readPlayerCardsMore2(h4.playerCards)
     fmt.Println("玩家4的牌：", len(h4.playerCards), "张\n", rpc4, "\n")
     
-    //重新赋值测试
+    //重新赋值测试(最多24张)
     h4.playerCards[:][0].COLOR = "Spade"
     h4.playerCards[:][0].SYMBOL = "3"
     h4.playerCards[:][0].VALUE = 3
@@ -406,7 +389,7 @@ func afterDealCardsMore(ret mPlayCards) {
     rbc := show.readBottomCardsMore(h5.bottomCards)
     fmt.Println("底牌：", rbc, "\n")
 
-    //重新赋值测试（6张）
+    //重新赋值测试（最多6张）
     h5.bottomCards[:][0].COLOR = "Spade"
     h5.bottomCards[:][0].SYMBOL = "10"
     h5.bottomCards[:][0].VALUE = 10
@@ -507,6 +490,23 @@ func isIncludeJoker(cards []*pokerCards) bool {
         }
     }
     return false
+}
+
+//判断牌型前先排序 降序
+func bubbleSort(cards []*pokerCards) []*pokerCards {
+    length := len(cards)
+    slice := make([]*pokerCards, length) //不能改变原始牌的顺序，根据原始牌中癞子牌的下标进行赋值，每赋值
+    for i := 0; i < length; i++ {        //一次，做一次排序、牌型判断
+        slice[i] = cards[i]
+    }
+    for i := 0; i < length-1; i++ {
+        for j := 0; j < length - i -1; j++ {
+            if slice[j].VALUE < slice[j+1].VALUE {
+                slice[j], slice[j+1] = slice[j+1], slice[j]
+            }
+        }
+    }
+    return slice
 }
 
 //判断牌型
