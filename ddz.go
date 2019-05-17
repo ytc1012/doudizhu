@@ -98,6 +98,8 @@ func checkCardsType(cards []int) {
             fmt.Println("顺子\n")
         } else if isThreePair(cards) {
             fmt.Println("三带对\n")
+        } else if isBoom(cards) {
+            fmt.Println("炸弹\n")
         } else {
             fmt.Println("不符合规则\n")
         }
@@ -110,6 +112,8 @@ func checkCardsType(cards []int) {
             fmt.Println("四带二单\n")
         } else if isEvenPair(cards) {
             fmt.Println("连对")
+        } else if isBoom(cards) {
+            fmt.Println("炸弹\n")
         } else {
             fmt.Println("不符合规则\n")
         }
@@ -130,6 +134,8 @@ func checkCardsType(cards []int) {
             fmt.Println("顺子\n")
         } else if isEvenPair(cards) {
             fmt.Println("连对\n")
+        } else if isBoom(cards) {
+            fmt.Println("炸弹\n")
         } else if isPlane(cards) {
             fmt.Println("飞机不带\n")
         } else if isThreePlaneThree(cards) {
@@ -640,18 +646,6 @@ func isIncludeJokerTwo(cards []int) bool {
         } else if c == 14 {
             return true
         } else if c == 15 {
-            return true
-        }
-    }
-    return false
-}
-
-//是否有大小王
-func isIncludeJoker(cards []int) bool {
-    for _, c := range cards {
-        if c == 16 {
-            return true
-        } else if c == 17 {
             return true
         }
     }
