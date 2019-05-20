@@ -17,64 +17,68 @@ var FullPoker = []byte{
 }
 
 func main() {
+    pf := &FullPoker
     fmt.Println("新牌：\n", FullPoker, "\n")
-    res1 := shufflePoker(FullPoker)
+    res1 := shufflePoker(pf)
     fmt.Println("洗牌：\n", res1, "\n")
     p1, p2, p3, bo := dealPoker(res1)
     fmt.Println("玩家牌和底牌：\n", p1, "\n", p2, "\n", p3, "\n", bo, "\n")
     
     twoPokers := bytes.Repeat(FullPoker, 2)
     fmt.Println("两副：\n", twoPokers, "\n")
-    res2 := shufflePoker(twoPokers)
+    res2 := shufflePoker(&twoPokers)
     fmt.Println("洗牌：\n", res2, "\n")
     ps1, ps2, ps3, ps4, bos := dealPokers(res2)
     fmt.Println("玩家牌和底牌：\n", ps1, "\n", ps2, "\n", ps3, "\n", ps4, "\n", bos, "\n")
     
     ceshi := []byte{0x03, 0x04, 0x03, 0x04, 0x03, 0x04, 0x05, 0x05, 0x05, 0x06, 0x09, 0x08}
     
-    cardsType(ceshi)
+    cardsType(&ceshi)
 }
 
 //洗牌
-func shufflePoker(vals []byte) []byte {
+func shufflePoker(vals *[]byte) *[]byte {
     r := rand.New(rand.NewSource(time.Now().Unix()))
-    ret := make([]byte, len(vals))
-    perm := r.Perm(len(vals))
+    ret := make([]byte, len(*vals))
+    perm := r.Perm(len(*vals))
     for i, randIndex := range perm {
-        ret[i] = vals[randIndex]
+        ret[i] = (*vals)[randIndex]
     }
-    return ret
+    return &ret
 }
 
 //发牌
-func dealPoker(vals []byte) ([]byte, []byte, []byte, []byte) {
-    a, b, c, d := vals[:17], vals[17:34], vals[34:51], vals[51:]
-    return a, b, c, d
+func dealPoker(vals *[]byte) (*[]byte, *[]byte, *[]byte, *[]byte) {
+    pvals := *vals
+    a, b, c, d := pvals[:17], pvals[17:34], pvals[34:51], pvals[51:]
+    return &a, &b, &c, &d
 }
 
-func dealPokers(vals []byte) ([]byte, []byte, []byte, []byte, []byte) {
-    a, b, c, d, e := vals[:25], vals[25:50], vals[50:75], vals[75:100], vals[100:]
-    return a, b, c, d, e
+func dealPokers(vals *[]byte) (*[]byte, *[]byte, *[]byte, *[]byte, *[]byte) {
+    pvals := *vals
+    a, b, c, d, e := pvals[:25], pvals[25:50], pvals[50:75], pvals[75:100], pvals[100:]
+    return &a, &b, &c, &d, &e
 }
 
 //判断牌型
-func checkCardsType(cards []int) {
-    fmt.Println(cards)
-    switch len(cards) {
+func checkCardsType(cards *[]int) {
+    pcards := *cards
+    fmt.Println(pcards)
+    switch len(pcards) {
     case 0:
         fmt.Println("没有牌\n")
     case 1:
         fmt.Println("单张\n")
     case 2:
-        if cards[0] == 0x4F && cards[1] == 0x4E {
+        if pcards[0] == 0x4F && pcards[1] == 0x4E {
             fmt.Print("王炸\n")
-        } else if cards[0] & 0x0f == cards[1] & 0x0f {
+        } else if pcards[0] & 0x0f == pcards[1] & 0x0f {
             fmt.Println("对子\n")
         } else {
             fmt.Println("不符合规则\n")
         }
     case 3:
-        if cards[0] & 0x0f == cards[1] & 0x0f && cards[1] & 0x0f == cards[2] & 0x0f {
+        if pcards[0] & 0x0f == pcards[1] & 0x0f && pcards[1] & 0x0f == pcards[2] & 0x0f {
             fmt.Print("三不带\n")
         } else {
             fmt.Println("不符合规则\n")
@@ -151,7 +155,7 @@ func checkCardsType(cards []int) {
 }
 
 //去重
-func removeDup(a []int)[]int {
+func removeDup(a []int) []int {
     sort.Sort(sort.IntSlice(a))
     i := 0
     for j := 1; j < len(a); j ++ {
@@ -164,9 +168,10 @@ func removeDup(a []int)[]int {
 }
 
 //根据已有牌癞子可取值的集合
-func laiZiValue(cards []int) []int {
+func laiZiValue(cards *[]int) []int {
+    pcards := *cards
     slice := []int{}
-    for _, v := range cards {
+    for _, v := range pcards {
         slice = append(slice, v)
         slice = append(slice, v-1)
         slice = append(slice, v+1)
@@ -176,36 +181,38 @@ func laiZiValue(cards []int) []int {
 }
 
 //先癞子替换再牌型验证
-func cardsType(poker []byte) {
+func cardsType(poker *[]byte) {
     cards := getPokerValue(poker)
     slice := laiziIndex(cards)
     lzValue := laiZiValue(cards)
+    pcards := *cards
+    
     switch len(slice) {
     case 0:
         checkCardsType(cards)
 
     case 1:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             checkCardsType(cards)
         }
 
     case 2:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             for _, v1 := range lzValue {
-                cards[slice[1]] = v1
+                pcards[slice[1]] = v1
                 checkCardsType(cards)
             }
         }
 
     case 3:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             for _, v1 := range lzValue {
-                cards[slice[1]] = v1
+                pcards[slice[1]] = v1
                 for _, v2 := range lzValue {
-                    cards[slice[2]] = v2
+                    pcards[slice[2]] = v2
                     checkCardsType(cards)
                 }
             }
@@ -213,13 +220,13 @@ func cardsType(poker []byte) {
 
     case 4:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             for _, v1 := range lzValue {
-                cards[slice[1]] = v1
+                pcards[slice[1]] = v1
                 for _, v2 := range lzValue {
-                    cards[slice[2]] = v2
+                    pcards[slice[2]] = v2
                     for _, v3 := range lzValue {
-                        cards[slice[3]] = v3
+                        pcards[slice[3]] = v3
                         checkCardsType(cards)
                     }
                 }
@@ -227,15 +234,15 @@ func cardsType(poker []byte) {
         }
     case 5:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             for _, v1 := range lzValue {
-                cards[slice[1]] = v1
+                pcards[slice[1]] = v1
                 for _, v2 := range lzValue {
-                    cards[slice[2]] = v2
+                    pcards[slice[2]] = v2
                     for _, v3 := range lzValue {
-                        cards[slice[3]] = v3
+                        pcards[slice[3]] = v3
                         for _, v4 := range lzValue {
-                            cards[slice[4]] = v4
+                            pcards[slice[4]] = v4
                             checkCardsType(cards)
                         }
                     }
@@ -244,17 +251,17 @@ func cardsType(poker []byte) {
         }
     case 6:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             for _, v1 := range lzValue {
-                cards[slice[1]] = v1
+                pcards[slice[1]] = v1
                 for _, v2 := range lzValue {
-                    cards[slice[2]] = v2
+                    pcards[slice[2]] = v2
                     for _, v3 := range lzValue {
-                        cards[slice[3]] = v3
+                        pcards[slice[3]] = v3
                         for _, v4 := range lzValue {
-                            cards[slice[4]] = v4
+                            pcards[slice[4]] = v4
                             for _, v5 := range lzValue {
-                                cards[slice[5]] = v5
+                                pcards[slice[5]] = v5
                                 checkCardsType(cards)
                             }
                         }
@@ -264,19 +271,19 @@ func cardsType(poker []byte) {
         }
     case 7:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             for _, v1 := range lzValue {
-                cards[slice[1]] = v1
+                pcards[slice[1]] = v1
                 for _, v2 := range lzValue {
-                    cards[slice[2]] = v2
+                    pcards[slice[2]] = v2
                     for _, v3 := range lzValue {
-                        cards[slice[3]] = v3
+                        pcards[slice[3]] = v3
                         for _, v4 := range lzValue {
-                            cards[slice[4]] = v4
+                            pcards[slice[4]] = v4
                             for _, v5 := range lzValue {
-                                cards[slice[5]] = v5
+                                pcards[slice[5]] = v5
                                 for _, v6 := range lzValue {
-                                    cards[slice[6]] = v6
+                                    pcards[slice[6]] = v6
                                     checkCardsType(cards)
                                 }
                             }
@@ -287,21 +294,21 @@ func cardsType(poker []byte) {
         }
     case 8:
         for _, v := range lzValue {
-            cards[slice[0]] = v
+            pcards[slice[0]] = v
             for _, v1 := range lzValue {
-                cards[slice[1]] = v1
+                pcards[slice[1]] = v1
                 for _, v2 := range lzValue {
-                    cards[slice[2]] = v2
+                    pcards[slice[2]] = v2
                     for _, v3 := range lzValue {
-                        cards[slice[3]] = v3
+                        pcards[slice[3]] = v3
                         for _, v4 := range lzValue {
-                            cards[slice[4]] = v4
+                            pcards[slice[4]] = v4
                             for _, v5 := range lzValue {
-                                cards[slice[5]] = v5
+                                pcards[slice[5]] = v5
                                 for _, v6 := range lzValue {
-                                    cards[slice[6]] = v6
+                                    pcards[slice[6]] = v6
                                     for _, v7 := range lzValue {
-                                        cards[slice[7]] = v7
+                                        pcards[slice[7]] = v7
                                         checkCardsType(cards)
                                     }
                                 }
@@ -315,19 +322,23 @@ func cardsType(poker []byte) {
 }
 
 //取牌值
-func getPokerValue(poker []byte) []int {
-    newPoker := make([]int, len(poker))
-    for i, _ := range poker {
-        newPoker[i] = int(poker[i] & 0x0f)
+func getPokerValue(poker *[]byte) *[]int {
+    ppoker := *poker
+    newPoker := make([]int, len(ppoker))
+    for i, _ := range ppoker {
+        newPoker[i] = int(ppoker[i] & 0x0f)
     }
-    return newPoker
+    return &newPoker
 }
 
 //炸弹
-func isBoom(cards []int) bool {
-    a := cards[0]
-    for _, v := range cards {
-        if a != v {
+func isBoom(cards *[]int) bool {
+    pcards := *cards
+    a := pcards[0]
+    for _, v := range pcards {
+        if v == a {
+            continue
+        } else {
             return false
         }
     }
@@ -335,9 +346,9 @@ func isBoom(cards []int) bool {
 }
 
 //连对
-func isEvenPair(poker []int) bool {
+func isEvenPair(poker *[]int) bool {
     cards := descend(poker)
-    if isIncludeJokerTwo(cards) {
+    if isIncludeJokerTwo(&cards) {
         return false
     } else {
         l := len(cards)
@@ -365,9 +376,9 @@ func isEvenPair(poker []int) bool {
 }
 
 //顺子
-func isStraight(poker []int) bool {
+func isStraight(poker *[]int) bool {
     cards := descend(poker)
-    if isIncludeJokerTwo(cards) {
+    if isIncludeJokerTwo(&cards) {
         return false
     } else {
         for i, _ := range cards {
@@ -375,7 +386,7 @@ func isStraight(poker []int) bool {
                 cards[i] = 14
             }
         }
-        card := descend(cards)
+        card := descend(&cards)
         for i := 0; i < len(card)-1; i++ {
             if (card[i] - card[i+1]) == 1 {
                 continue
@@ -388,9 +399,9 @@ func isStraight(poker []int) bool {
 }
 
 //飞机不带
-func isPlane(poker []int) bool {
+func isPlane(poker *[]int) bool {
     cards := descend(poker)
-    if isIncludeJokerTwo(cards) {
+    if isIncludeJokerTwo(&cards) {
         return false
     } else {
         l := len(cards)
@@ -421,7 +432,7 @@ func isPlane(poker []int) bool {
 }
 
 //三带单
-func isThreeOne(poker []int) bool {
+func isThreeOne(poker *[]int) bool {
     cards := descend(poker)
     a := cards[0] == cards[1]
     b := cards[1] == cards[2]
@@ -435,7 +446,7 @@ func isThreeOne(poker []int) bool {
 }
 
 //三带对
-func isThreePair(poker []int) bool {
+func isThreePair(poker *[]int) bool {
     cards := descend(poker)
     a := cards[0] == cards[1]
     b := cards[1] == cards[2]
@@ -450,7 +461,7 @@ func isThreePair(poker []int) bool {
 }
 
 //四带二单
-func isFourTwo(poker []int) bool {
+func isFourTwo(poker *[]int) bool {
     cards := descend(poker)
     a := cards[0] == cards[1]
     b := cards[1] == cards[2]
@@ -468,7 +479,7 @@ func isFourTwo(poker []int) bool {
 }
 
 //飞机带二单
-func isPlaneTwo(poker []int) bool {
+func isPlaneTwo(poker *[]int) bool {
     cards := descend(poker)
     a := cards[0] == cards[1]
     b := cards[1] == cards[2]
@@ -493,7 +504,7 @@ func isPlaneTwo(poker []int) bool {
 }
 
 //四带二对
-func isFourPair(poker []int) bool {
+func isFourPair(poker *[]int) bool {
     cards := descend(poker)
     a := cards[0] == cards[1]
     b := cards[1] == cards[2]
@@ -514,8 +525,8 @@ func isFourPair(poker []int) bool {
 }
 
 //飞机带二对
-func isPlanePair(poker []int) bool {
-    if len(poker) == 10 {
+func isPlanePair(poker *[]int) bool {
+    if len(*poker) == 10 {
         cards := descend(poker)
         a := cards[0] == cards[1]
         b := cards[1] == cards[2]
@@ -543,8 +554,8 @@ func isPlanePair(poker []int) bool {
 }
 
 //三飞机带三单
-func isThreePlaneThree(poker []int) bool {
-    if len(poker) == 12 {
+func isThreePlaneThree(poker *[]int) bool {
+    if len(*poker) == 12 {
         cards := descend(poker)
         a := cards[0] == cards[1]
         b := cards[1] == cards[2]
@@ -584,8 +595,8 @@ func isThreePlaneThree(poker []int) bool {
 }
 
 //三飞机带三对
-func isThreePlanePair(poker []int) bool {
-    if len(poker) == 15 {
+func isThreePlanePair(poker *[]int) bool {
+    if len(*poker) == 15 {
         cards := descend(poker)
         a := cards[0] == cards[1]
         b := cards[1] == cards[2]
@@ -628,24 +639,25 @@ func isThreePlanePair(poker []int) bool {
 }
 
 //排序
-func descend(cards []int) []int{
-    slice := make([]int, len(cards)) //不能改变原始牌的顺序，根据原始牌中癞子牌的下标进行赋值，每赋值
-    for i := 0; i < len(cards); i++ {        //一次，做一次排序、牌型判断
-        slice[i] = cards[i]
+func descend(cards *[]int) []int{
+    pcards := *cards
+    slice := make([]int, len(pcards)) //不能改变原始牌的顺序，根据原始牌中癞子牌的下标进行赋值，每赋值
+    for i, _ := range pcards {        //一次，做一次排序、牌型判断
+        slice[i] = pcards[i]
     }
-    
     sort.Sort(sort.Reverse(sort.IntSlice(slice)))
     return slice
 }
 
 //是否有大王或小王或2
-func isIncludeJokerTwo(cards []int) bool {
-    for _, c := range cards {
-        if c == 2 {
+func isIncludeJokerTwo(cards *[]int) bool {
+    pcards := *cards
+    for _, v := range pcards {
+        if v == 2 {
             return true
-        } else if c == 14 {
+        } else if v == 14 {
             return true
-        } else if c == 15 {
+        } else if v == 15 {
             return true
         }
     }
@@ -653,10 +665,11 @@ func isIncludeJokerTwo(cards []int) bool {
 }
 
 //确定癞子牌的下标,7为癞子
-func laiziIndex(cards []int) []int {
+func laiziIndex(cards *[]int) []int {
+    pcards := *cards
     slice := make([]int, 0)
-    for i, _ := range cards {
-        if cards[i] == 7 {
+    for i, _ := range pcards {
+        if pcards[i] == 7 {
             slice = append(slice, i)
         }
     }
